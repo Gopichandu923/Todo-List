@@ -1,16 +1,17 @@
-export default function Missions() {
+"use client";
+
+import { useState } from "react";
+
+export default function Missions({ tasks }) {
+  console.log(tasks);
   return (
-    <div>
-      <div>
-        <form>
-          <input type="text" placeholder="Enter title"></input>
-          <input type="text" placeholder="Enter Description"></input>
-          <button>Add</button>
-        </form>
-      </div>
-      <div>
-        <h1>Tasks</h1>
-      </div>
+    <div className="flex justify-center">
+      {tasks.map((task, ind) => (
+        <div key={ind}>
+          <h3>{task.title}</h3>
+          <p>{task.description}</p>
+        </div>
+      ))}
     </div>
   );
 }
