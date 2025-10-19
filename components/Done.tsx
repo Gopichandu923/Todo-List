@@ -8,22 +8,20 @@ export default function Done({ completedTasks }) {
   }, [completedTasks]);
 
   return (
-    <div className="flex flex-col items-center gap-4 mt-4">
+    <div className="flex flex-col items-center gap-4 mt-4 w-150">
       {completedTasks.length === 0 ? (
         <p>No completed missions yet.</p>
       ) : (
         completedTasks.map((task, ind) => (
           <div
             key={ind}
-            className="p-4 bg-green-100 border border-green-400 rounded-md shadow-md w-80 text-center"
+            className="flex flex-col bg-green-400 rounded-xl p-3 w-150"
           >
-            <h1 className="text-lg font-semibold text-green-800">
-              {task.title}
-            </h1>
-            <p className="text-gray-700">{task.description}</p>
-            <span className="text-sm text-gray-500">
+            <h3 className="text-lg text-white font-bold">{task.title}</h3>
+            <p>{task.description}</p>
+            <p className="text-end">
               Completed at: {task.date ? task.date : "—"}
-            </span>
+            </p>
           </div>
         ))
       )}
