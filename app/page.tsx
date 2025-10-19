@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Mission from "@/components/Mission";
 import Done from "@/components/Done";
 
@@ -7,15 +7,19 @@ export default function Home() {
   const [isMissions, setMissions] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ title: "", description: "" });
+  const [newTask, setNewTask] = useState({ id: 0, title: "", description: "" });
+  const [loaded, setLoaded] = useState(false);
 
   // Add new mission
   const handleAdd = (e) => {
     e.preventDefault();
     if (!newTask.title.trim() || !newTask.description.trim()) return;
 
-    setTasks([...tasks, newTask]);
-    setNewTask({ title: "", description: "" });
+    setTasks([
+      ...tasks,
+      { ...newTask, id: Date.now() + Math.floor(Math.random() * 1000) },
+    ]);
+    setNewTask({ title: "", description: "", id: 0 });
   };
 
   // Move task to Done list
@@ -24,14 +28,34 @@ export default function Home() {
       ...completedTasks,
       { ...task, date: new Date().toLocaleString() },
     ]);
-    setTasks(tasks.filter((t) => t !== task)); // remove from missions
+    setTasks(tasks.filter((t) => t.id !== task.id)); // remove from missions
   };
+
+  useEffect(() => {
+    const localTasks = JSON.parse(localStorage.getItem("Missions") || "[]");
+    const localCompletedTasks = JSON.parse(
+      localStorage.getItem("CompletedMissions") || "[]"
+    );
+    setTasks(localTasks);
+    setCompletedTasks(localCompletedTasks);
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("Missions", JSON.stringify(tasks));
+  }, [tasks, loaded]);
+
+  useEffect(() => {
+    localStorage.setItem("CompletedMissions", JSON.stringify(completedTasks));
+  }, [completedTasks, loaded]);
 
   return (
     <div className="justify-items-center p-4">
       <div>
-        <h1 className="text-2xl font-bold mb-2">Create a new mission</h1>
-        <form onSubmit={handleAdd} className="flex flex-col gap-2">
+        <h1 className="text-2xl text-green-400 font-bold mb-2">
+          Create a new mission
+        </h1>
+        <form onSubmit={handleAdd} className="flex flex-row gap-2">
           <input
             type="text"
             value={newTask.title}
@@ -50,22 +74,22 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="bg-green-400 text-white p-2 rounded hover:bg-green-600"
           >
             Add
           </button>
         </form>
       </div>
 
-      <div className="flex justify-center gap-4 p-3 mt-4 bg-orange-400 rounded-md">
+      <div className="flex justify-center p-2 gap-1 mt-4 bg-green-400 rounded-3xl">
         <button
-          className={`p-2 rounded-xl ${isMissions ? "bg-white" : ""}`}
+          className={`p-1 rounded-4xl ${isMissions ? "bg-white" : ""}`}
           onClick={() => setMissions(true)}
         >
           Missions
         </button>
         <button
-          className={`p-2 rounded-xl ${!isMissions ? "bg-white" : ""}`}
+          className={`p-1 rounded-4xl ${!isMissions ? "bg-white" : ""}`}
           onClick={() => setMissions(false)}
         >
           Done
