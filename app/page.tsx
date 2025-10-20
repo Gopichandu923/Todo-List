@@ -3,32 +3,67 @@ import { useState, useEffect } from "react";
 import Mission from "@/components/Mission";
 import Done from "@/components/Done";
 
+interface Tasks {
+  id: number;
+  title: string;
+  description: string;
+}
+
+interface CompletedTasks extends Tasks {
+  date: string;
+}
 export default function Home() {
   const [isMissions, setMissions] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
-  const [newTask, setNewTask] = useState({ id: 0, title: "", description: "" });
-  const [loaded, setLoaded] = useState(false);
+  const [newTask, setNewTask] = useState<Tasks>({
+    id: 0,
+    title: "",
+    description: "",
+  });
 
   // Add new mission
-  const handleAdd = (e) => {
+  const handleAdd = (e: Event) => {
     e.preventDefault();
     if (!newTask.title.trim() || !newTask.description.trim()) return;
-
-    setTasks([
-      ...tasks,
-      { ...newTask, id: Date.now() + Math.floor(Math.random() * 1000) },
-    ]);
+    let updatedTasks = [...tasks];
+    updatedTasks.push({
+      ...newTask,
+      id: Date.now() + Math.floor(Math.random() * 1000),
+    });
+    setTasks(updatedTasks);
     setNewTask({ title: "", description: "", id: 0 });
+    localStorage.setItem("Missions", JSON.stringify(tasks));
   };
 
   // Move task to Done list
-  const handleCompleteTask = (task) => {
-    setCompletedTasks([
-      ...completedTasks,
-      { ...task, date: new Date().toLocaleString() },
-    ]);
-    setTasks(tasks.filter((t) => t.id !== task.id)); // remove from missions
+  const handleCompleteTask = (task: Tasks) => {
+    let updatedCompletedTasks = [...completedTasks];
+
+    updatedCompletedTasks.push({ ...task, date: new Date().toLocaleString() });
+    setCompletedTasks(updatedCompletedTasks);
+    let updatedTasks = tasks.filter((t) => t.id !== task.id);
+    setTasks(updatedTasks); // remove from missions
+    localStorage.setItem("Missions", JSON.stringify(updatedTasks));
+    localStorage.setItem(
+      "CompletedMissions",
+      JSON.stringify(updatedCompletedTasks)
+    );
+  };
+
+  const handleRemoveTask = (task: Tasks) => {
+    let updatedTasks = tasks.filter((t) => t.id !== task.id);
+    setTasks(updatedTasks); // remove from missions
+    localStorage.setItem("Missions", JSON.stringify(updatedTasks));
+  };
+
+  const handleRemoveCompletedTask = (task: CompletedTasks) => {
+    let updatedCompletedTasks = completedTasks.filter((t) => t.id !== task.id);
+    setCompletedTasks(updatedCompletedTasks);
+    localStorage.setItem(
+      "CompletedMissions",
+      JSON.stringify(updatedCompletedTasks)
+    );
   };
 
   useEffect(() => {
@@ -38,16 +73,7 @@ export default function Home() {
     );
     setTasks(localTasks);
     setCompletedTasks(localCompletedTasks);
-    setLoaded(true);
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("Missions", JSON.stringify(tasks));
-  }, [tasks, loaded]);
-
-  useEffect(() => {
-    localStorage.setItem("CompletedMissions", JSON.stringify(completedTasks));
-  }, [completedTasks, loaded]);
 
   return (
     <div className="justify-items-center p-4">
@@ -98,9 +124,16 @@ export default function Home() {
 
       <div className="mt-4">
         {isMissions ? (
-          <Mission tasks={tasks} AddToDone={handleCompleteTask} />
+          <Mission
+            tasks={tasks}
+            AddToDone={handleCompleteTask}
+            RemoveTask={handleRemoveTask}
+          />
         ) : (
-          <Done completedTasks={completedTasks} />
+          <Done
+            completedTasks={completedTasks}
+            RemoveCompletedTask={handleRemoveCompletedTask}
+          />
         )}
       </div>
     </div>
