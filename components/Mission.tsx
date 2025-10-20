@@ -1,8 +1,8 @@
 "use client";
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
+import { TiDelete } from "react-icons/ti";
 
-import { useState } from "react";
-
-export default function Missions({ tasks, AddToDone }) {
+export default function Missions({ tasks, AddToDone, RemoveTask }) {
   const handleComplete = (task) => {
     AddToDone({ ...task, date: new Date().toISOString() });
   };
@@ -17,18 +17,19 @@ export default function Missions({ tasks, AddToDone }) {
         tasks.map((task, ind) => (
           <div
             key={ind}
-            className="flex flex-row bg-green-400 rounded-xl w-150 p-3"
+            className="flex flex-row bg-green-400 rounded-xl w-150 p-2"
           >
             <div className="grow">
               <h3 className="text-lg text-white font-bold">{task.title}</h3>
               <p>{task.description}</p>
             </div>
-            <button
-              className="grow-0 bg-white rounded-4xl text-sm p-1"
-              onClick={() => handleComplete(task)}
-            >
-              Completed
-            </button>
+            <div className="flex flex-row grow-0 p-1 items-center">
+              <IoIosCheckmarkCircleOutline
+                size={38}
+                onClick={() => handleComplete(task)}
+              />
+              <TiDelete size={45} onClick={() => RemoveTask(task)} />
+            </div>
           </div>
         ))
       )}
