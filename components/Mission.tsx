@@ -1,22 +1,34 @@
 "use client";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { TiDelete } from "react-icons/ti";
+interface Task {
+  id: string; // Firestore ID is string
+  title: string;
+  description: string;
+  isCompleted?: boolean;
+}
 
-export default function Missions({ tasks, AddToDone, RemoveTask }) {
-  const handleComplete = (task) => {
-    AddToDone({ ...task, date: new Date().toISOString() });
-  };
+interface MissionsProps {
+  tasks: Task[];
+  AddToDone: (task: Task) => void;
+  RemoveTask: (task: Task) => void;
+}
+
+export default function Missions({
+  tasks,
+  AddToDone,
+  RemoveTask,
+}: MissionsProps) {
   return (
-    <div className="flex flex-col gap-2 ">
-      {tasks.length == 0 ? (
+    <div className="flex flex-col gap-2">
+      {tasks.length === 0 ? (
         <div>
           <h1>Missions are empty</h1>
         </div>
       ) : (
-        tasks.length != 0 &&
-        tasks.map((task, ind) => (
+        tasks.map((task) => (
           <div
-            key={ind}
+            key={task.id}
             className="flex flex-row bg-green-400 rounded-xl w-150 p-2"
           >
             <div className="grow">
@@ -26,9 +38,14 @@ export default function Missions({ tasks, AddToDone, RemoveTask }) {
             <div className="flex flex-row grow-0 p-1 items-center">
               <IoIosCheckmarkCircleOutline
                 size={38}
-                onClick={() => handleComplete(task)}
+                className="cursor-pointer"
+                onClick={() => AddToDone(task)}
               />
-              <TiDelete size={45} onClick={() => RemoveTask(task)} />
+              <TiDelete
+                size={45}
+                className="cursor-pointer"
+                onClick={() => RemoveTask(task)}
+              />
             </div>
           </div>
         ))
