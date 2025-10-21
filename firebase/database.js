@@ -8,22 +8,7 @@ import {
   getDocs,
   query,
   where,
-  and,
 } from "firebase/firestore";
-
-export const addUser = async (name, email, userId) => {
-  try {
-    const docRef = await addDoc(collection(db, "user"), {
-      email,
-      name,
-      userId,
-      createdAt: new Date(),
-    });
-    console.log(docRef);
-  } catch (err) {
-    console.log(err);
-  }
-};
 
 export const addTask = async (title, description, userId) => {
   try {
@@ -53,7 +38,7 @@ export const updateTask = async (id) => {
   try {
     const docRef = await updateDoc(doc(db, "tasks", id), {
       isCompleted: true,
-      completedAt: new Date(),
+      completedAt: new Date().toLocaleString(),
     });
     console.log(docRef);
   } catch (err) {
@@ -70,7 +55,7 @@ export const getTasks = async (userId) => {
         where("isCompleted", "==", false)
       )
     );
-    const tasks = docRef.docs.map((d) => ({ id: doc.id, ...doc.data() }));
+    const tasks = docRef.docs.map((d) => ({ id: d.id, ...d.data() }));
     return tasks;
   } catch (err) {
     console.log(err);
@@ -86,7 +71,7 @@ export const getCompletedTasks = async (userId) => {
         where("isCompleted", "==", true)
       )
     );
-    const tasks = docRef.docs.map((d) => ({ id: doc.id, ...doc.data() }));
+    const tasks = docRef.docs.map((d) => ({ id: d.id, ...d.data() }));
     return tasks;
   } catch (err) {
     console.log(err);
