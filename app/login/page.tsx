@@ -4,12 +4,18 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FirebaseError } from "firebase/app";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { signIn, user } = useAuth();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+
+  const { signIn, user } = useAuth() as {
+    signIn: (email: string, password: string) => Promise<void>;
+    user: { uid: string } | null;
+  };
+
   const router = useRouter();
 
   // Redirect if already logged in
@@ -17,15 +23,20 @@ export default function Login() {
     if (user) router.push("/");
   }, [user, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
     setError("");
+
     try {
       await signIn(email, password);
       router.push("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      switch (err.code) {
+      const errorCode = (err as FirebaseError).code;
+
+      switch (errorCode) {
         case "auth/invalid-credential":
           setError("Invalid email or password.");
           break;

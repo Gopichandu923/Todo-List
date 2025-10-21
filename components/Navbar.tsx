@@ -1,11 +1,19 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
-import Link from "next/link";
 import { FaRegUserCircle } from "react-icons/fa";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
-const Navbar = () => {
-  const { user, logOut } = useAuth();
+interface UserDetails {
+  displayName: string | null;
+  email: string | null;
+}
+
+const Navbar: React.FC = () => {
+  const { user, logOut } = useAuth() as {
+    user: UserDetails | null;
+    logOut: () => void;
+  };
 
   return (
     <header className="flex flex-row justify-between items-center p-4 bg-white shadow-md text-green-500 text-xl font-semibold">
@@ -48,4 +56,5 @@ const Navbar = () => {
     </header>
   );
 };
+
 export default Navbar;

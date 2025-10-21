@@ -6,13 +6,18 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignUpForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { signUp, user } = useAuth();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const { signUp, user } = useAuth() as {
+    signUp: (email: string, password: string, name: string) => Promise<void>;
+    user: { uid: string } | null;
+  };
+
   const router = useRouter();
 
   // Redirect logged-in users
@@ -20,7 +25,7 @@ export default function SignUpForm() {
     if (user) router.push("/");
   }, [user, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -33,9 +38,11 @@ export default function SignUpForm() {
     try {
       await signUp(email, password, name);
       router.push("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error signing up:", err);
-      switch (err.code) {
+      const errorCode = (err as { code?: string }).code;
+
+      switch (errorCode) {
         case "auth/email-already-in-use":
           setError("Email already in use. Try logging in instead.");
           break;

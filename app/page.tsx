@@ -9,7 +9,7 @@ import { addTask, updateTask, deleteTask } from "../firebase/database";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 
-interface Task {
+export interface Task {
   id: string;
   title: string;
   description: string;
@@ -17,95 +17,78 @@ interface Task {
   completedAt?: string;
 }
 
+interface DoneProps {
+  Tasks: Task[];
+  handleRemove: (task: Task) => void;
+}
+
 export default function Home() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAuth() as { user: { uid: string } | null };
 
   const [isMissions, setMissions] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState<Task>({
-    id: "",
+  const [newTask, setNewTask] = useState<Pick<Task, "title" | "description">>({
     title: "",
     description: "",
   });
 
-  // 🔹 Redirect if not logged in
+  //  Redirect if not logged in
   useEffect(() => {
-    if (user === null) {
-      router.push("/login");
-    }
+    if (!user) router.push("/login");
   }, [user, router]);
 
-  // 🔹 Fetch tasks when logged in
+  // Fetch tasks when logged in
   useEffect(() => {
     if (!user) return;
 
-    const q1 = query(
+    const qMissions = query(
       collection(db, "tasks"),
       where("userId", "==", user.uid),
       where("isCompleted", "==", false)
     );
 
-    const unsubscribe1 = onSnapshot(q1, (snapshot) => {
+    const unsubscribeMissions = onSnapshot(qMissions, (snapshot) => {
       setTasks(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Task)));
     });
 
-    const q2 = query(
+    const qDone = query(
       collection(db, "tasks"),
       where("userId", "==", user.uid),
       where("isCompleted", "==", true)
     );
 
-    const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+    const unsubscribeDone = onSnapshot(qDone, (snapshot) => {
       setCompletedTasks(
         snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Task))
       );
     });
 
     return () => {
-      unsubscribe1();
-      unsubscribe2();
+      unsubscribeMissions();
+      unsubscribeDone();
     };
   }, [user]);
 
-  // 🔹 Add new task
-  const handleAdd = async (e: React.FormEvent) => {
+  // Add new task
+  const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    if (!newTask.title.trim() || !newTask.description.trim()) return;
+    if (!user || !newTask.title.trim() || !newTask.description.trim()) return;
 
     await addTask(newTask.title, newTask.description, user.uid);
-    setNewTask({ id: "", title: "", description: "" });
+    setNewTask({ title: "", description: "" });
   };
 
-  // 🔹 Mark as completed
+  // Mark as completed
   const handleCompleteTask = async (task: Task) => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+    if (!user) return;
     await updateTask(task.id);
   };
 
-  // 🔹 Delete from missions
+  // Delete task
   const handleRemoveTask = async (task: Task) => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    await deleteTask(task.id);
-  };
-
-  // 🔹 Delete completed
-  const handleRemoveCompletedTask = async (task: Task) => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+    if (!user) return;
     await deleteTask(task.id);
   };
 
@@ -156,8 +139,6 @@ export default function Home() {
           Done
         </button>
       </div>
-
-      {/* 🔹 Task Lists */}
       <div className="mt-4">
         {isMissions ? (
           <Mission
@@ -168,7 +149,7 @@ export default function Home() {
         ) : (
           <Done
             Tasks={completedTasks}
-            RemoveCompletedTask={handleRemoveCompletedTask}
+            RemoveCompletedTask={async (task) => await handleRemoveTask(task)}
           />
         )}
       </div>

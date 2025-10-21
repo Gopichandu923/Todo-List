@@ -6,11 +6,15 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  completedAt?: string; // optional completed date
+  completedAt?: string; // make optional
 }
 
-export default function Done({ Tasks, RemoveCompletedTask }) {
-  console.log(Tasks);
+interface DoneProps {
+  Tasks: Task[];
+  RemoveCompletedTask: (task: Task) => void | Promise<void>;
+}
+
+export default function Done({ Tasks, RemoveCompletedTask }: DoneProps) {
   return (
     <div className="flex flex-col items-center gap-4 mt-4 w-150">
       {Tasks.length === 0 ? (
@@ -23,13 +27,17 @@ export default function Done({ Tasks, RemoveCompletedTask }) {
           >
             <div className="flex flex-col grow">
               <h3 className="text-lg text-white font-bold">{task.title}</h3>
-              <p>{task.description}</p>
-              <p className="text-end">Completed at: {task.completedAt}</p>
+              <p className="text-black">{task.description}</p>
+              {task.completedAt && (
+                <p className="text-end text-white">
+                  Completed at: {task.completedAt}
+                </p>
+              )}
             </div>
             <div className="grow-0">
               <TiDelete
                 size={45}
-                className="cursor-pointer"
+                className="cursor-pointer text-white"
                 onClick={() => RemoveCompletedTask(task)}
               />
             </div>
