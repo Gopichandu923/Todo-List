@@ -1,79 +1,113 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Mission from "@/components/Mission";
 import Done from "@/components/Done";
+import { useAuth } from "../contexts/AuthContext";
+import { addTask, updateTask, deleteTask } from "../firebase/database";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/config";
 
-interface Tasks {
-  id: number;
+interface Task {
+  id: string;
   title: string;
   description: string;
+  isCompleted?: boolean;
+  completedAt?: string;
 }
 
-interface CompletedTasks extends Tasks {
-  date: string;
-}
 export default function Home() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [isMissions, setMissions] = useState(true);
-  const [tasks, setTasks] = useState([]);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [newTask, setNewTask] = useState<Tasks>({
-    id: 0,
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState<Task>({
+    id: "",
     title: "",
     description: "",
   });
 
-  // Add new mission
-  const handleAdd = (e: Event) => {
-    e.preventDefault();
-    if (!newTask.title.trim() || !newTask.description.trim()) return;
-    let updatedTasks = [...tasks];
-    updatedTasks.push({
-      ...newTask,
-      id: Date.now() + Math.floor(Math.random() * 1000),
-    });
-    setTasks(updatedTasks);
-    setNewTask({ title: "", description: "", id: 0 });
-    localStorage.setItem("Missions", JSON.stringify(tasks));
-  };
-
-  // Move task to Done list
-  const handleCompleteTask = (task: Tasks) => {
-    let updatedCompletedTasks = [...completedTasks];
-
-    updatedCompletedTasks.push({ ...task, date: new Date().toLocaleString() });
-    setCompletedTasks(updatedCompletedTasks);
-    let updatedTasks = tasks.filter((t) => t.id !== task.id);
-    setTasks(updatedTasks); // remove from missions
-    localStorage.setItem("Missions", JSON.stringify(updatedTasks));
-    localStorage.setItem(
-      "CompletedMissions",
-      JSON.stringify(updatedCompletedTasks)
-    );
-  };
-
-  const handleRemoveTask = (task: Tasks) => {
-    let updatedTasks = tasks.filter((t) => t.id !== task.id);
-    setTasks(updatedTasks); // remove from missions
-    localStorage.setItem("Missions", JSON.stringify(updatedTasks));
-  };
-
-  const handleRemoveCompletedTask = (task: CompletedTasks) => {
-    let updatedCompletedTasks = completedTasks.filter((t) => t.id !== task.id);
-    setCompletedTasks(updatedCompletedTasks);
-    localStorage.setItem(
-      "CompletedMissions",
-      JSON.stringify(updatedCompletedTasks)
-    );
-  };
-
+  // 🔹 Redirect if not logged in
   useEffect(() => {
-    const localTasks = JSON.parse(localStorage.getItem("Missions") || "[]");
-    const localCompletedTasks = JSON.parse(
-      localStorage.getItem("CompletedMissions") || "[]"
+    if (user === null) {
+      router.push("/login");
+    }
+  }, [user, router]);
+
+  // 🔹 Fetch tasks when logged in
+  useEffect(() => {
+    if (!user) return;
+
+    const q1 = query(
+      collection(db, "tasks"),
+      where("userId", "==", user.uid),
+      where("isCompleted", "==", false)
     );
-    setTasks(localTasks);
-    setCompletedTasks(localCompletedTasks);
-  }, []);
+
+    const unsubscribe1 = onSnapshot(q1, (snapshot) => {
+      setTasks(snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Task)));
+    });
+
+    const q2 = query(
+      collection(db, "tasks"),
+      where("userId", "==", user.uid),
+      where("isCompleted", "==", true)
+    );
+
+    const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+      setCompletedTasks(
+        snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Task))
+      );
+    });
+
+    return () => {
+      unsubscribe1();
+      unsubscribe2();
+    };
+  }, [user]);
+
+  // 🔹 Add new task
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (!newTask.title.trim() || !newTask.description.trim()) return;
+
+    await addTask(newTask.title, newTask.description, user.uid);
+    setNewTask({ id: "", title: "", description: "" });
+  };
+
+  // 🔹 Mark as completed
+  const handleCompleteTask = async (task: Task) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    await updateTask(task.id);
+  };
+
+  // 🔹 Delete from missions
+  const handleRemoveTask = async (task: Task) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    await deleteTask(task.id);
+  };
+
+  // 🔹 Delete completed
+  const handleRemoveCompletedTask = async (task: Task) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    await deleteTask(task.id);
+  };
 
   return (
     <div className="justify-items-center p-4">
@@ -107,6 +141,7 @@ export default function Home() {
         </form>
       </div>
 
+      {/* 🔹 Toggle Missions / Done */}
       <div className="flex justify-center p-2 gap-1 mt-4 bg-green-400 rounded-3xl">
         <button
           className={`p-1 rounded-4xl ${isMissions ? "bg-white" : ""}`}
@@ -122,6 +157,7 @@ export default function Home() {
         </button>
       </div>
 
+      {/* 🔹 Task Lists */}
       <div className="mt-4">
         {isMissions ? (
           <Mission
@@ -131,7 +167,7 @@ export default function Home() {
           />
         ) : (
           <Done
-            completedTasks={completedTasks}
+            Tasks={completedTasks}
             RemoveCompletedTask={handleRemoveCompletedTask}
           />
         )}
