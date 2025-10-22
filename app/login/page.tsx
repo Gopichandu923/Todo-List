@@ -7,9 +7,9 @@ import Link from "next/link";
 import { FirebaseError } from "firebase/app";
 
 export default function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const { signIn, user } = useAuth() as {
     signIn: (email: string, password: string) => Promise<void>;
@@ -18,14 +18,11 @@ export default function Login() {
 
   const router = useRouter();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) router.push("/");
   }, [user, router]);
 
-  const handleLogin = async (
-    e: React.FormEvent<HTMLFormElement>
-  ): Promise<void> => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -50,37 +47,49 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gray-200 p-4">
       <form
         onSubmit={handleLogin}
-        className="flex flex-col gap-3 w-80 bg-white p-6 rounded-lg shadow-md"
+        className="
+          flex flex-col justify-center gap-4
+          bg-white
+          p-8
+          rounded-lg
+          shadow-md
+          w-full
+          sm:w-3/4
+          md:w-2/3
+          lg:w-1/3
+          min-h-[400px]
+          sm:min-h-[450px]
+          md:min-h-[500px]
+        "
       >
-        <h1 className="text-2xl font-bold text-center text-green-500 mb-2">
-          Login
-        </h1>
+        <h1 className="text-2xl font-bold text-center text-green-500">Login</h1>
 
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
         <input
           type="email"
           value={email}
           placeholder="Enter email"
           onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
+
         <input
           type="password"
           value={password}
           placeholder="Enter password"
           onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
 
         <button
           type="submit"
-          className="bg-green-400 text-white py-2 rounded hover:bg-green-500 transition"
+          className="bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors duration-200"
         >
           Sign In
         </button>

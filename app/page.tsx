@@ -17,11 +17,6 @@ export interface Task {
   completedAt?: string;
 }
 
-interface DoneProps {
-  Tasks: Task[];
-  handleRemove: (task: Task) => void;
-}
-
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth() as { user: { uid: string } | null };
@@ -34,7 +29,7 @@ export default function Home() {
     description: "",
   });
 
-  //  Redirect if not logged in
+  // Redirect if not logged in
   useEffect(() => {
     if (!user) router.push("/login");
   }, [user, router]);
@@ -93,18 +88,19 @@ export default function Home() {
   };
 
   return (
-    <div className="justify-items-center p-4">
-      <div>
-        <h1 className="text-2xl text-green-400 font-bold mb-2">
+    <div className="flex flex-col items-center min-h-screen bg-gray-50 p-4">
+      {/* Add Task Form */}
+      <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 bg-white p-6 rounded-lg shadow-md">
+        <h1 className="text-2xl text-green-500 font-bold mb-4 text-center">
           Create a new mission
         </h1>
-        <form onSubmit={handleAdd} className="flex flex-row gap-2">
+        <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleAdd}>
           <input
             type="text"
             value={newTask.title}
             placeholder="Enter title"
             onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-            className="border p-2 rounded"
+            className="flex-1 border p-3 rounded focus:outline-none focus:border-green-400"
           />
           <input
             type="text"
@@ -113,33 +109,39 @@ export default function Home() {
             onChange={(e) =>
               setNewTask({ ...newTask, description: e.target.value })
             }
-            className="border p-2 rounded"
+            className="flex-1 border p-3 rounded focus:outline-none focus:border-green-400"
           />
           <button
             type="submit"
-            className="bg-green-400 text-white p-2 rounded hover:bg-green-600"
+            className="bg-green-500 text-white py-3 px-6 rounded hover:bg-green-600 transition-colors"
           >
             Add
           </button>
         </form>
       </div>
 
-      {/* 🔹 Toggle Missions / Done */}
-      <div className="flex justify-center p-2 gap-1 mt-4 bg-green-400 rounded-3xl">
+      {/* Toggle Missions / Done */}
+      <div className="flex justify-center p-2 gap-2 mt-6 bg-green-400 rounded-full w-full sm:w-3/4 md:w-2/3 lg:w-1/2">
         <button
-          className={`p-1 rounded-4xl ${isMissions ? "bg-white" : ""}`}
+          className={`flex-1 p-2 rounded-full ${
+            isMissions ? "bg-white text-green-500 font-semibold" : "text-white"
+          }`}
           onClick={() => setMissions(true)}
         >
           Missions
         </button>
         <button
-          className={`p-1 rounded-4xl ${!isMissions ? "bg-white" : ""}`}
+          className={`flex-1 p-2 rounded-full ${
+            !isMissions ? "bg-white text-green-500 font-semibold" : "text-white"
+          }`}
           onClick={() => setMissions(false)}
         >
           Done
         </button>
       </div>
-      <div className="mt-4">
+
+      {/* Tasks List */}
+      <div className="mt-6 w-full sm:w-3/4 md:w-2/3 lg:w-1/2">
         {isMissions ? (
           <Mission
             tasks={tasks}

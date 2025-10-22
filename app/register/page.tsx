@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignUpForm() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { signUp, user } = useAuth() as {
     signUp: (email: string, password: string, name: string) => Promise<void>;
@@ -61,23 +61,36 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-3 w-80 bg-white p-6 rounded-lg shadow-md"
+        className="
+          flex flex-col justify-center gap-4
+          bg-white
+          p-8
+          rounded-lg
+          shadow-md
+          w-full
+          sm:w-3/4
+          md:w-2/3
+          lg:w-1/3
+          min-h-[400px]
+          sm:min-h-[450px]
+          md:min-h-[500px]
+        "
       >
-        <h1 className="text-2xl font-bold text-center text-green-500 mb-2">
+        <h1 className="text-2xl font-bold text-center text-green-500">
           Create Account
         </h1>
 
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Full Name"
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
         <input
@@ -85,7 +98,7 @@ export default function SignUpForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
         <input
@@ -93,7 +106,7 @@ export default function SignUpForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
         <input
@@ -101,14 +114,14 @@ export default function SignUpForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Confirm Password"
-          className="border p-2 rounded"
+          className="text-base sm:text-lg placeholder-gray-500 border-2 border-gray-300 p-3 rounded focus:outline-none focus:border-green-400"
           required
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="bg-green-400 text-white py-2 rounded hover:bg-green-500 transition"
+          className="bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors duration-200"
         >
           {loading ? "Registering..." : "Register"}
         </button>

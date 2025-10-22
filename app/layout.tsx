@@ -28,11 +28,18 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+        className={`
+          ${geistSans.variable} ${geistMono.variable} 
+          antialiased 
+          bg-gray-50 
+          min-h-screen 
+          flex 
+          flex-col
+        `}
       >
         <AuthProvider>
           <Navbar />
-          <main className="p-4">{children}</main>
+          <main className="flex-1 overflow-auto p-4">{children}</main>
         </AuthProvider>
       </body>
     </html>

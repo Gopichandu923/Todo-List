@@ -3,6 +3,7 @@
 import { FaRegUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 interface UserDetails {
   displayName: string | null;
@@ -15,44 +16,56 @@ const Navbar: React.FC = () => {
     logOut: () => void;
   };
 
+  const pathname = usePathname();
+
+  // Hide user info & auth buttons on login/register pages
+  const hideUserControls = pathname === "/login" || pathname === "/register";
+
   return (
-    <header className="flex flex-row justify-between items-center p-4 bg-white shadow-md text-green-500 text-xl font-semibold">
-      {/* Left Section: Brand */}
-      <Link href="/" className="hover:text-green-600 transition">
+    <header className="sticky top-0 z-50 flex flex-col sm:flex-row justify-between items-center p-4 shadow-md bg-white text-green-500 font-semibold">
+      {/* Logo / Brand */}
+      <Link
+        href="/"
+        className="text-2xl sm:text-3xl font-bold hover:text-green-600 transition-colors mb-2 sm:mb-0"
+      >
         Todo
       </Link>
 
-      {/* Middle Section: Greeting */}
-      <div className="flex items-center gap-2">
-        <FaRegUserCircle size={26} />
-        {user ? (
-          <span>
-            Welcome,{" "}
-            <strong>{user.displayName || user.email?.split("@")[0]}</strong>
-          </span>
-        ) : (
-          <span>Welcome, Guest</span>
-        )}
-      </div>
+      {!hideUserControls && (
+        <>
+          {/* User Info */}
+          <div className="flex items-center gap-2 text-sm sm:text-base">
+            <FaRegUserCircle size={26} />
+            {user ? (
+              <span>
+                Welcome,{" "}
+                <strong>{user.displayName || user.email?.split("@")[0]}</strong>
+              </span>
+            ) : (
+              <span>Welcome, Guest</span>
+            )}
+          </div>
 
-      {/* Right Section: Auth Buttons */}
-      <div>
-        {user ? (
-          <button
-            onClick={logOut}
-            className="bg-green-400 text-white px-4 py-1 rounded hover:bg-green-500 transition"
-          >
-            Logout
-          </button>
-        ) : (
-          <Link
-            href="/login"
-            className="bg-green-400 text-white px-4 py-1 rounded hover:bg-green-500 transition"
-          >
-            Login
-          </Link>
-        )}
-      </div>
+          {/* Auth Button */}
+          <div className="mt-2 sm:mt-0">
+            {user ? (
+              <button
+                onClick={logOut}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </>
+      )}
     </header>
   );
 };
