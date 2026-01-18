@@ -27,8 +27,10 @@ export async function signUpAction(email: string, password: string, displayName:
         });
 
         return { success: true, user: { uid: user.uid, email: user.email, displayName: user.displayName } };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        const errorCode = (error as { code?: string })?.code || errorMessage;
+        return { success: false, error: errorCode };
     }
 }
 
@@ -46,8 +48,10 @@ export async function signInAction(email: string, password: string) {
         });
 
         return { success: true, user: { uid: user.uid, email: user.email, displayName: user.displayName } };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        const errorCode = (error as { code?: string })?.code || errorMessage;
+        return { success: false, error: errorCode };
     }
 }
 
@@ -56,8 +60,10 @@ export async function signOutAction() {
         await firebaseSignOut(auth);
         (await cookies()).set("session", "", { maxAge: 0 });
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        const errorCode = (error as { code?: string })?.code || errorMessage;
+        return { success: false, error: errorCode };
     }
 }
 
