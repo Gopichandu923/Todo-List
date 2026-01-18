@@ -1,14 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
-import { auth } from "../firebase/config";
+import { signUpAction, signInAction, signOutAction, getSessionAction } from "../app/auth";
 
 // Create Auth context
 const AuthContext = createContext(null);
@@ -27,51 +20,64 @@ export const AuthProvider = ({ children }) => {
 
   // Sign Up
   const signUp = async (email, password, displayName = "") => {
-    try {
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      if (displayName) await updateProfile(user, { displayName });
-      setUser(user);
-      return user;
-    } catch (err) {
-      console.error("Error signing up:", err);
-      throw err;
+    setLoading(true);
+    const result = await signUpAction(email, password, displayName);
+    if (result.success) {
+      setUser(result.user);
+      setLoading(false);
+      return result.user;
+    } else {
+      setLoading(false);
+      const error = new Error(result.error);
+      error.code = result.error; // For compatibility with Firebase error handling
+      throw error;
     }
   };
 
   // Sign In
   const signIn = async (email, password) => {
-    try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-      setUser(user);
-      return user;
-    } catch (err) {
-      console.error("Error signing in:", err);
-      throw err;
+    setLoading(true);
+    const result = await signInAction(email, password);
+    if (result.success) {
+      setUser(result.user);
+      setLoading(false);
+      return result.user;
+    } else {
+      setLoading(false);
+      const error = new Error(result.error);
+      error.code = result.error; // For compatibility with Firebase error handling
+      throw error;
     }
   };
 
   // Log Out
   const logOut = async () => {
-    try {
-      await signOut(auth);
+    setLoading(true);
+    const result = await signOutAction();
+    if (result.success) {
       setUser(null);
-    } catch (err) {
-      console.error("Error signing out:", err);
-      throw err;
+      setLoading(false);
+    } else {
+      setLoading(false);
+      throw new Error(result.error);
     }
   };
 
-  // Auth state listener
+  // Initial session check
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    async function checkSession() {
+      try {
+        const userData = await getSessionAction();
+        if (userData) {
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error("Failed to restore session:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkSession();
   }, []);
 
   const value = { user, loading, signUp, signIn, logOut };
