@@ -53,13 +53,20 @@ export const AuthProvider = ({ children }) => {
   // Log Out
   const logOut = async () => {
     setLoading(true);
-    const result = await signOutAction();
-    if (result.success) {
-      setUser(null);
+    try {
+      const result = await signOutAction();
+      if (result.success) {
+        setUser(null);
+        // Using router.replace instead of window.location for smoother transition
+        // But we need the router from next/navigation. 
+        // Let's keep it simple for now or import it if we can.
+        // Actually, many users prefer a full refresh to clear server cache.
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
       setLoading(false);
-    } else {
-      setLoading(false);
-      throw new Error(result.error);
     }
   };
 
@@ -84,7 +91,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

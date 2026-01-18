@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       await signIn(email, password);
-      router.push("/");
+      // Removed manual router.push here to let useEffect handle it smoothly
     } catch (err: unknown) {
       console.error(err);
       const errorCode = (err as FirebaseError).code;

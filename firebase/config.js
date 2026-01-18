@@ -1,6 +1,6 @@
 import 'server-only';
 import admin from "firebase-admin";
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 if (!admin.apps.length) {
@@ -13,8 +13,8 @@ if (!admin.apps.length) {
   });
 }
 
-// Server-side Client SDK (needed for password login)
-const clientApp = initializeApp({
+// Client SDK (Server-side instance)
+const clientApp = getApps().length > 0 ? getApp() : initializeApp({
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
   projectId: process.env.FIREBASE_PROJECT_ID,

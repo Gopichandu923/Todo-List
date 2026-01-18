@@ -57,8 +57,7 @@ export async function signInAction(email: string, password: string) {
 
 export async function signOutAction() {
     try {
-        await firebaseSignOut(auth);
-        (await cookies()).set("session", "", { maxAge: 0 });
+        (await cookies()).set("session", "", { maxAge: 0, path: "/" });
         return { success: true };
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

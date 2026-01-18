@@ -37,7 +37,7 @@ export default function SignUpForm() {
     setLoading(true);
     try {
       await signUp(email, password, name);
-      router.push("/");
+      // Let useEffect handle the redirect naturally when user state updates
     } catch (err: unknown) {
       console.error("Error signing up:", err);
       const errorCode = (err as { code?: string }).code;
